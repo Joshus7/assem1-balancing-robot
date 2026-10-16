@@ -99,7 +99,7 @@ pip install -r src/requirements.txt
 
 ```bash
 mkdir -p ~/new_ws && cd ~/new_ws
-git clone <this-repo-url> .
+git clone https://github.com/Joshus7/assem1-balancing-robot.git .
 colcon build
 source install/setup.zsh        # or setup.bash
 ```
