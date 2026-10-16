@@ -1,0 +1,401 @@
+<robot name="Assem1">
+
+  <link name="base_link"/>
+
+  <joint name="base_to_body" type="fixed">
+    <parent link="base_link"/>
+    <child link="body"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+  </joint>
+
+  <!-- IMU link: aligned with base_link (x forward, y left, z up) so pitch = rotation about y -->
+  <link name="imu_link"/>
+  <joint name="base_to_imu" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+  </joint>
+
+  <!-- body is UPRIGHT (CAD frame: z up, arm on top). Wheel axle at z 0.0815.
+       Ballast / battery (INVISIBLE, mass only): 2 x 0.25 kg packs left and right of the arm, centre 20 cm up -> centre of mass
+       5.2 cm ABOVE the axle and right above it in the camera pose (see robot_model.py) -->
+  <link name="ballast_left">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.25"/>
+      <inertia ixx="0.0001724" ixy="0" ixz="0" iyy="0.0002537" iyz="0" izz="0.0001854"/>
+    </inertial>
+  </link>
+  <joint name="base_to_ballast_left" type="fixed">
+    <parent link="base_link"/>
+    <child link="ballast_left"/>
+    <origin xyz="-0.009 0.07 0.20" rpy="0 0 0"/>
+  </joint>
+  <link name="ballast_right">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.25"/>
+      <inertia ixx="0.0001724" ixy="0" ixz="0" iyy="0.0002537" iyz="0" izz="0.0001854"/>
+    </inertial>
+  </link>
+  <joint name="base_to_ballast_right" type="fixed">
+    <parent link="base_link"/>
+    <child link="ballast_right"/>
+    <origin xyz="-0.009 -0.07 0.20" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ==================== BODY ==================== -->
+  <link name="body">
+    <inertial>
+      <origin xyz="-0.00063 -3.188e-05 0.00754" rpy="0 0 0" />
+      <mass value="0.5231" />
+      <inertia
+        ixx="0.002215" ixy="8.565e-06" ixz="-8.353e-06"
+        iyy="0.000817" iyz="-6.060e-06" izz="0.002583" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://Assem1/meshes/body.STL" />
+      </geometry>
+      <material name="body_mat">
+        <color rgba="0.1 0.25 0.85 1.0" />
+      </material>
+    </visual>
+    <!-- bottom of the box raised from 7 cm to 4 cm below the axle (wheel radius 8 cm): the full mesh box
+         hits the floor at ~9 deg lean and trips the robot. Now it only touches at ~50 deg. -->
+    <collision>
+      <origin xyz="-0.0007 0 0.03175" rpy="0 0 0" />
+      <geometry>
+        <box size="0.141 0.196 0.0805" />
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- ==================== LEFT WHEEL ==================== -->
+  <link name="left_wheel">
+    <inertial>
+      <origin xyz="0 0 -0.00895" rpy="0 0 0" />
+      <mass value="0.2257" />
+      <inertia
+        ixx="0.000361" ixy="0" ixz="0"
+        iyy="0.000361" iyz="0" izz="0.000702" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://Assem1/meshes/left_wheel.STL" />
+      </geometry>
+      <material name="left_wheel_mat">
+        <color rgba="0.2 0.2 0.2 1.0" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.018" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.08" length="0.036" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="left_wheel-joint" type="continuous">
+    <origin xyz="0 -0.1366 0.0315" rpy="1.5708 0 0" />
+    <parent link="body" />
+    <child link="left_wheel" />
+    <axis xyz="0 0 -1" />
+    <limit effort="20.0" velocity="40.0" />
+    <dynamics damping="0.001" friction="0.0" />
+  </joint>
+
+  <!-- ==================== RIGHT WHEEL ==================== -->
+  <link name="right_wheel">
+    <inertial>
+      <origin xyz="0 0 -0.00895" rpy="0 0 0" />
+      <mass value="0.2257" />
+      <inertia
+        ixx="0.000361" ixy="0" ixz="0"
+        iyy="0.000361" iyz="0" izz="0.000702" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://Assem1/meshes/right_wheel.STL" />
+      </geometry>
+      <material name="right_wheel_mat">
+        <color rgba="0.2 0.2 0.2 1.0" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.018" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.08" length="0.036" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="right_wheel_joint" type="continuous">
+    <origin xyz="0 0.1366 0.0315" rpy="-1.5708 0 0" />
+    <parent link="body" />
+    <child link="right_wheel" />
+    <axis xyz="0 0 1" />
+    <limit effort="20.0" velocity="40.0" />
+    <dynamics damping="0.001" friction="0.0" />
+  </joint>
+
+  <!-- ==================== ACTIVE ARM (REVOLUTE) ==================== -->
+  <link name="arm_link_1">
+    <inertial>
+      <origin xyz="0.00043 -0.00280 0.04227" rpy="0 0 0" />
+      <mass value="0.0549" />
+      <inertia
+        ixx="2.346e-05" ixy="0" ixz="0"
+        iyy="2.167e-05" iyz="-1.423e-06" izz="6.846e-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://Assem1/meshes/arm_link_1.STL" />
+      </geometry>
+      <material name="arm_mat1">
+        <color rgba="1.0 0.5 0.05 1.0" />
+      </material>
+    </visual>
+  </link>
+
+  <joint name="link1" type="revolute">
+    <origin xyz="-0.0047285 0.00080999 0.049815" rpy="0 0 0" />
+    <parent link="body" />
+    <child link="arm_link_1" />
+    <axis xyz="0.0065584 -0.99997 -0.0030051" />
+    <limit lower="-1.57" upper="1.57" effort="5.0" velocity="4.0" />
+    <dynamics damping="0.1" friction="0.05" />
+  </joint>
+
+  <link name="arm_link_2">
+    <inertial>
+      <origin xyz="0.01828 -0.00142 0.03751" rpy="0 0 0" />
+      <mass value="0.0549" />
+      <inertia
+        ixx="2.012e-05" ixy="-6.781e-07" ixz="-6.665e-06"
+        iyy="2.166e-05" iyz="-1.377e-06" izz="1.020e-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://Assem1/meshes/arm_link_2.STL" />
+      </geometry>
+      <material name="arm_mat2">
+        <color rgba="1.0 0.5 0.05 1.0" />
+      </material>
+    </visual>
+  </link>
+
+  <joint name="link2" type="revolute">
+    <origin xyz="0.0016571 -0.020702 0.070511" rpy="0 0 0" />
+    <parent link="arm_link_1" />
+    <child link="arm_link_2" />
+    <axis xyz="0.0065584 -0.99997 -0.0030051" />
+    <limit lower="-1.57" upper="1.57" effort="5.0" velocity="4.0" />
+    <dynamics damping="0.1" friction="0.05" />
+  </joint>
+
+  <link name="arm_link_3">
+    <inertial>
+      <origin xyz="0.00815 0.00521 0.02824" rpy="0 0 0" />
+      <mass value="0.0375" />
+      <inertia
+        ixx="1.893e-05" ixy="4.182e-07" ixz="-4.053e-06"
+        iyy="2.032e-05" iyz="1.537e-06" izz="5.789e-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://Assem1/meshes/arm_link_3.STL" />
+      </geometry>
+      <material name="arm_mat3">
+        <color rgba="1.0 0.5 0.05 1.0" />
+      </material>
+    </visual>
+  </link>
+
+  <joint name="link3" type="revolute">
+    <origin xyz="0.031019 0.022517 0.062295" rpy="0 0 0" />
+    <parent link="arm_link_2" />
+    <child link="arm_link_3" />
+    <axis xyz="-0.0065584 0.99997 0.0030051" />
+    <limit lower="-1.57" upper="1.57" effort="3.0" velocity="4.0" />
+    <dynamics damping="0.05" friction="0.02" />
+  </joint>
+
+  <!-- ==================== END-EFFECTOR CAMERA ==================== -->
+  <!-- camera_link sits on the tip of arm_link_3 (mesh top: x 0.012, y 0.004, z 0.063) and looks along the
+       link's +z axis (= the direction the end effector points; forward in the ARM_HOME camera pose).
+       Gazebo cameras look along their +x, so pitch -90 deg maps camera x -> link z, and camera "up" -> robot up.
+       Massless on purpose (lumped like imu_link): the trained balance policy stays valid. -->
+  <link name="camera_link">
+    <visual>
+      <origin xyz="-0.01 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.02 0.03 0.02" />
+      </geometry>
+      <material name="camera_mat">
+        <color rgba="0.05 0.05 0.05 1.0" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0.002 0 0" rpy="0 1.5708 0" />
+      <geometry>
+        <cylinder radius="0.006" length="0.004" />
+      </geometry>
+      <material name="lens_mat">
+        <color rgba="0.2 0.6 1.0 1.0" />
+      </material>
+    </visual>
+  </link>
+  <joint name="arm_link_3_to_camera" type="fixed">
+    <parent link="arm_link_3" />
+    <child link="camera_link" />
+    <origin xyz="0.012 0.004 0.083" rpy="0 -1.5708 0" />
+  </joint>
+
+  <!-- ROS optical frame convention (z forward, x right, y down) for the image header -->
+  <link name="camera_optical_frame"/>
+  <joint name="camera_to_optical" type="fixed">
+    <parent link="camera_link" />
+    <child link="camera_optical_frame" />
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708" />
+  </joint>
+
+  <!-- ==================== GAZEBO PHYSICS ==================== -->
+  <gazebo reference="body">
+    <material>Gazebo/Blue</material>
+  </gazebo>
+  <gazebo reference="arm_link_1"><material>Gazebo/Orange</material></gazebo>
+  <gazebo reference="arm_link_2"><material>Gazebo/Orange</material></gazebo>
+  <gazebo reference="arm_link_3"><material>Gazebo/Orange</material></gazebo>
+
+  <gazebo reference="left_wheel">
+    <mu1>1.2</mu1>
+    <mu2>1.2</mu2>
+    <kp>200000.0</kp>
+    <kd>10.0</kd>
+    <minDepth>0.001</minDepth>
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+
+  <gazebo reference="right_wheel">
+    <mu1>1.2</mu1>
+    <mu2>1.2</mu2>
+    <kp>200000.0</kp>
+    <kd>10.0</kd>
+    <minDepth>0.001</minDepth>
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+
+  
+
+  <!-- IMU Sensor (on imu_link, aligned with base_link) -->
+  <gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <visualize>false</visualize>
+      <topic>imu/data</topic>
+      <plugin filename="libgazebo_ros_imu_sensor.dylib" name="imu_plugin">
+        <ros>
+          <namespace>/</namespace>
+          <remapping>~/out:=imu/data</remapping>
+        </ros>
+        <initial_orientation_as_reference>false</initial_orientation_as_reference>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- Camera on the end effector: /arm_camera/image_raw + /arm_camera/camera_info (640x480, 30 Hz, 80 deg FOV) -->
+  <gazebo reference="camera_link">
+    <material>Gazebo/Black</material>
+    <sensor name="arm_camera" type="camera">
+      <always_on>true</always_on>
+      <update_rate>30</update_rate>
+      <visualize>true</visualize>
+      <camera name="arm_camera">
+        <horizontal_fov>1.396</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.01</near>
+          <far>50</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.005</stddev>
+        </noise>
+      </camera>
+      <plugin name="arm_camera_controller" filename="libgazebo_ros_camera.dylib">
+        <ros>
+          <namespace>/</namespace>
+        </ros>
+        <camera_name>arm_camera</camera_name>
+        <frame_name>camera_optical_frame</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- Wheel Differential Drive Plugin
+       FIXED: wheel_diameter 0.16 (was 0.10), no acceleration limit (was 10 rad/s^2 = 0.8 m/s^2: far too weak
+       to catch a falling robot), update rate 100 Hz -->
+  <gazebo>
+    <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.dylib">
+      <update_rate>100</update_rate>
+      <left_joint>left_wheel-joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+      <wheel_separation>0.2732</wheel_separation>
+      <wheel_diameter>0.16</wheel_diameter>
+      <max_wheel_torque>20.0</max_wheel_torque>
+      <max_wheel_acceleration>0.0</max_wheel_acceleration>
+      <command_topic>cmd_vel</command_topic>
+      <publish_odom>true</publish_odom>
+      <publish_odom_tf>false</publish_odom_tf>
+      <publish_wheel_tf>false</publish_wheel_tf>
+      <odometry_topic>odom</odometry_topic>
+      <odometry_frame>odom</odometry_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+    </plugin>
+  </gazebo>
+
+  <!-- ARM: ros2_control position interface (moves ONLY the arm joints), topic /arm_controller/commands.
+       (position_pid is listed by gazebo_ros2_control 0.4.10 but its controller switch is rejected.)
+       FIXED: the old libgazebo_ros_joint_pose_trajectory plugin TELEPORTED the whole model (SetWorldPose)
+       on every arm command -> robot frozen at pitch 0, physics went NaN, balancing impossible. -->
+  <ros2_control name="ArmSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    <joint name="link1">
+      <command_interface name="position"/>
+      <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="link2">
+      <command_interface name="position"/>
+      <state_interface name="position"><param name="initial_value">-0.6</param></state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="link3">
+      <command_interface name="position"/>
+      <state_interface name="position"><param name="initial_value">0.97</param></state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+
+  <gazebo>
+    <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.dylib">
+      <parameters>ASSEM1_CONFIG_DIR/arm_controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+
+</robot>

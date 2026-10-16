@@ -1,0 +1,10 @@
+build/
+install/
+log/
+.DS_Store
+__pycache__/
+*.pyc
+.vscode/
+src/Assem1/export.log
+src/Assem1/config/checkpoints/
+src/Assem1/config/old_models_*/
